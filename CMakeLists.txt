@@ -63,6 +63,8 @@ if(BUILD_TESTS)
 
     add_executable(orderbook_tests
         tests/unit/order_test.cpp
+        tests/unit/price_level_test.cpp
+        tests/unit/order_book_test.cpp
     )
 
     target_link_libraries(orderbook_tests
