@@ -1,6 +1,6 @@
 # Limit Order Book Engine
 
-![Build](https://github.com/YOUR_USERNAME/orderbook-engine/actions/workflows/ci.yml/badge.svg)
+![Build](https://github.com/prabhav-jalan/orderbook-engine/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![C++](https://img.shields.io/badge/C%2B%2B-20-blue.svg)
 

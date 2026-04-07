@@ -1,0 +1,59 @@
+# Build directories
+build/
+build-*/
+cmake-build-*/
+out/
+
+# CMake artifacts
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+_deps/
+
+# Compiled binaries and objects
+*.o
+*.a
+*.so
+*.dylib
+*.exe
+*.out
+
+# Generated files
+Makefile
+*.ninja
+*.pb.h
+*.pb.cc
+
+# Benchmark and test output
+*.xml
+*.json
+benchmark_results/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Clangd / compile commands (optional — some prefer to keep compile_commands.json)
+compile_commands.json
+.clangd/
+.cache/
+
+# Sanitizer / profiler output
+*.profraw
+*.profdata
+perf.data
+perf.data.old
+callgrind.out.*
+massif.out.*
+
+# Dependency managers
+vcpkg_installed/
+conan_deps/
