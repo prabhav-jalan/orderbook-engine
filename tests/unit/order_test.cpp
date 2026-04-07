@@ -27,15 +27,25 @@ TEST(OrderTest, RemainingQuantity) {
     EXPECT_EQ(order.remaining_quantity(), 65);
 }
 
-TEST(OrderTest, IsFilled) {
+TEST(OrderTest, RemainingQuantityWhenUnfilled) {
+    Order order{};
+    order.quantity = 500;
+    order.filled_quantity = 0;
+    EXPECT_EQ(order.remaining_quantity(), 500);
+}
+
+TEST(OrderTest, IsFilledExact) {
     Order order{};
     order.quantity = 100;
-
-    order.filled_quantity = 50;
-    EXPECT_FALSE(order.is_filled());
-
     order.filled_quantity = 100;
     EXPECT_TRUE(order.is_filled());
+}
+
+TEST(OrderTest, IsFilledPartial) {
+    Order order{};
+    order.quantity = 100;
+    order.filled_quantity = 50;
+    EXPECT_FALSE(order.is_filled());
 }
 
 TEST(OrderTest, FixedPointPricing) {
