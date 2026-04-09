@@ -85,6 +85,32 @@ public:
     /// Get a pointer to an order by ID, or nullptr if not found.
     [[nodiscard]] Order* find_order(OrderId order_id) const;
 
+    // ──────────────────────────────────────────
+    // Level access (used by MatchingEngine)
+    // ──────────────────────────────────────────
+
+    /// Get the best (first) bid price level. Returns nullptr if no bids.
+    [[nodiscard]] PriceLevel* best_bid_level();
+
+    /// Get the best (first) ask price level. Returns nullptr if no asks.
+    [[nodiscard]] PriceLevel* best_ask_level();
+
+    /// Remove a fully filled order from the book's index and its level.
+    /// Called by the matching engine after filling an order.
+    void remove_filled_order(Order* order);
+
+    /// Add an order directly to the book without generating reports.
+    /// Used by the matching engine to rest unfilled remainder.
+    void rest_order(Order* order);
+
+    /// Calculate total matchable quantity on the ask side for a buy order
+    /// at the given limit price (or all prices if is_market is true).
+    [[nodiscard]] Quantity matchable_ask_quantity(Price limit_price, bool is_market) const;
+
+    /// Calculate total matchable quantity on the bid side for a sell order
+    /// at the given limit price (or all prices if is_market is true).
+    [[nodiscard]] Quantity matchable_bid_quantity(Price limit_price, bool is_market) const;
+
 private:
     /// Bids: std::map with std::greater so begin() = highest price (best bid).
     std::map<Price, PriceLevel, std::greater<Price>> bids_;
