@@ -7,28 +7,45 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        compiler: [g++, clang++]
         build_type: [Debug, Release]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: sudo apt-get install -y cmake ninja-build
-
-      - name: Configure
+      - name: Configure CMake
         run: |
           cmake -B build \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-            -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+            -DBUILD_TESTS=ON
 
       - name: Build
-        run: cmake --build build
+        run: cmake --build build --parallel $(nproc)
 
-      - name: Test
-        run: ctest --test-dir build --output-on-failure
+      - name: Run tests
+        working-directory: build
+        run: ctest --output-on-failure --parallel $(nproc)
+
+  sanitizers:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build with AddressSanitizer
+        run: |
+          cmake -B build-asan \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
+            -DBUILD_TESTS=ON
+          cmake --build build-asan --parallel $(nproc)
+
+      - name: Run tests under sanitizer
+        working-directory: build-asan
+        run: ctest --output-on-failure
