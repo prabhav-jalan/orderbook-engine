@@ -94,6 +94,9 @@ void MatchingEngine::match_buy(Order* incoming, MatchResult& result) {
             if (resting->is_filled()) {
                 resting->status = OrderStatus::Filled;
                 book_.remove_filled_order(resting);
+                // Level may have been erased from the map (freed).
+                // Break to the outer loop which re-fetches a fresh pointer.
+                break;
             } else {
                 resting->status = OrderStatus::PartiallyFilled;
                 level->reduce_total_quantity(fill_qty);
@@ -142,6 +145,7 @@ void MatchingEngine::match_sell(Order* incoming, MatchResult& result) {
             if (resting->is_filled()) {
                 resting->status = OrderStatus::Filled;
                 book_.remove_filled_order(resting);
+                break;
             } else {
                 resting->status = OrderStatus::PartiallyFilled;
                 level->reduce_total_quantity(fill_qty);
