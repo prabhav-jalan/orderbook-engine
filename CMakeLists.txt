@@ -95,6 +95,9 @@ if(BUILD_BENCHMARKS)
         PRIVATE orderbook_matching
     )
 
+    # Benchmarks should always be optimized, even in Debug builds.
     target_compile_options(orderbook_bench PRIVATE -O3 -march=native)
+
+    # Disable RTTI and exceptions for benchmark binary (perf).
     target_compile_options(orderbook_bench PRIVATE -fno-rtti)
 endif()
