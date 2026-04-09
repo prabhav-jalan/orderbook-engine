@@ -65,10 +65,11 @@ if(BUILD_TESTS)
         tests/unit/order_test.cpp
         tests/unit/price_level_test.cpp
         tests/unit/order_book_test.cpp
+        tests/unit/matching_engine_test.cpp
     )
 
     target_link_libraries(orderbook_tests
-        PRIVATE orderbook_core
+        PRIVATE orderbook_matching
         PRIVATE GTest::gtest_main
     )
 

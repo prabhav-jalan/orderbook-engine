@@ -55,6 +55,11 @@ public:
     /// True if no orders are resting at this price.
     [[nodiscard]] bool empty() const noexcept { return head_ == nullptr; }
 
+    /// Reduce the cached total quantity by a fill amount.
+    /// Called by the matching engine when a resting order is partially filled,
+    /// so we can update the level's aggregate without a costly remove+add.
+    void reduce_total_quantity(Quantity filled) noexcept { total_quantity_ -= filled; }
+
 private:
     Order*      head_{nullptr};
     Order*      tail_{nullptr};

@@ -146,6 +146,55 @@ Order* OrderBook::find_order(OrderId order_id) const {
 }
 
 // ──────────────────────────────────────────────
+// Level access (used by MatchingEngine)
+// ──────────────────────────────────────────────
+
+PriceLevel* OrderBook::best_bid_level() {
+    if (bids_.empty()) return nullptr;
+    return &bids_.begin()->second;
+}
+
+PriceLevel* OrderBook::best_ask_level() {
+    if (asks_.empty()) return nullptr;
+    return &asks_.begin()->second;
+}
+
+void OrderBook::remove_filled_order(Order* order) {
+    orders_.erase(order->id);
+    remove_order_from_level(order);
+}
+
+void OrderBook::rest_order(Order* order) {
+    orders_[order->id] = order;
+    if (order->side == Side::Buy) {
+        bids_[order->price].add_order(order);
+    } else {
+        asks_[order->price].add_order(order);
+    }
+    order->status = OrderStatus::Accepted;
+}
+
+Quantity OrderBook::matchable_ask_quantity(Price limit_price, bool is_market) const {
+    Quantity total = 0;
+    for (const auto& [price, level] : asks_) {
+        // asks_ is sorted ascending, so once price > limit, we're done.
+        if (!is_market && price > limit_price) break;
+        total += level.total_quantity();
+    }
+    return total;
+}
+
+Quantity OrderBook::matchable_bid_quantity(Price limit_price, bool is_market) const {
+    Quantity total = 0;
+    for (const auto& [price, level] : bids_) {
+        // bids_ is sorted descending (std::greater), so once price < limit, done.
+        if (!is_market && price < limit_price) break;
+        total += level.total_quantity();
+    }
+    return total;
+}
+
+// ──────────────────────────────────────────────
 // Internal helpers
 // ──────────────────────────────────────────────
 
