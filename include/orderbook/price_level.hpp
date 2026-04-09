@@ -31,13 +31,9 @@ public:
     ~PriceLevel() = default;
 
     /// Append an order to the back of the FIFO queue.
-    /// The order's prev/next pointers will be modified.
-    /// Precondition: order is not already in any list.
     void add_order(Order* order);
 
     /// Remove an order from the queue.
-    /// The order's prev/next pointers will be reset to nullptr.
-    /// Precondition: order is currently in THIS level's list.
     void remove_order(Order* order);
 
     /// The first order in the queue (earliest arrival). nullptr if empty.
@@ -56,8 +52,7 @@ public:
     [[nodiscard]] bool empty() const noexcept { return head_ == nullptr; }
 
     /// Reduce the cached total quantity by a fill amount.
-    /// Called by the matching engine when a resting order is partially filled,
-    /// so we can update the level's aggregate without a costly remove+add.
+    /// Called by the matching engine when a resting order is partially filled.
     void reduce_total_quantity(Quantity filled) noexcept { total_quantity_ -= filled; }
 
 private:

@@ -87,8 +87,14 @@ if(BUILD_BENCHMARKS)
         benchmarks/throughput_bench.cpp
     )
 
+    target_include_directories(orderbook_bench
+        PRIVATE ${CMAKE_SOURCE_DIR}/benchmarks
+    )
+
     target_link_libraries(orderbook_bench
-        PRIVATE orderbook_core
         PRIVATE orderbook_matching
     )
+
+    target_compile_options(orderbook_bench PRIVATE -O3 -march=native)
+    target_compile_options(orderbook_bench PRIVATE -fno-rtti)
 endif()

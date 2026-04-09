@@ -1,12 +1,8 @@
-// src/core/order.cpp
-// Order-related utility functions
-//
-// Phase 1: Implement order creation helpers and validation.
-
 #include "orderbook/types.hpp"
 
 namespace orderbook {
 
-// TODO (Phase 1): Add order factory functions and validation logic
+// Order is a plain struct — all logic is inline in the header.
+// This file exists so the CMake library target has a translation unit.
 
 } // namespace orderbook

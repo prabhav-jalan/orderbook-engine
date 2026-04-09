@@ -1,7 +1,5 @@
 // benchmarks/throughput_bench.cpp
-// Order book throughput and latency benchmarks.
-//
-// Phase 3: Implement with synthetic order stream generator.
+// Benchmark suite — Phase 3 (planned).
 
 #include <iostream>
 

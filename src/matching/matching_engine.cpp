@@ -1,15 +1,3 @@
-// src/matching/matching_engine.cpp
-//
-// Matching engine: price-time priority order matching.
-//
-// For each incoming order, we walk the opposite side of the book
-// from the best price inward, matching against resting orders
-// in FIFO order within each level.
-//
-// The execution price is always the resting order's price,
-// giving the aggressor price improvement when possible.
-// (A buy at $11 hitting an ask at $10 trades at $10.)
-
 #include "orderbook/matching_engine.hpp"
 #include <algorithm>
 
@@ -45,7 +33,6 @@ MatchResult MatchingEngine::submit_order(Order* order) {
     // Handle the unfilled remainder based on order type.
     if (!order->is_filled()) {
         if (order->type == OrderType::Limit) {
-            // Limit orders rest in the book.
             book_.rest_order(order);
             result.is_resting = true;
         } else {
@@ -68,13 +55,10 @@ bool MatchingEngine::cancel_order(OrderId order_id) {
 // ──────────────────────────────────────────────
 
 void MatchingEngine::match_buy(Order* incoming, MatchResult& result) {
-    // Buy orders match against the ask side (lowest ask first).
     while (!incoming->is_filled()) {
         auto best_ask = book_.best_ask();
         if (!best_ask.has_value()) break;
 
-        // Limit orders only match if buy price >= ask price.
-        // Market orders match at any price.
         if (incoming->type != OrderType::Market && incoming->price < *best_ask) {
             break;
         }
@@ -90,7 +74,6 @@ void MatchingEngine::match_buy(Order* incoming, MatchResult& result) {
                 resting->remaining_quantity()
             );
 
-            // Execute at the resting order's price (price improvement).
             Price fill_price = resting->price;
 
             incoming->filled_quantity += fill_qty;
@@ -113,7 +96,6 @@ void MatchingEngine::match_buy(Order* incoming, MatchResult& result) {
                 book_.remove_filled_order(resting);
             } else {
                 resting->status = OrderStatus::PartiallyFilled;
-                // Update the level's cached total quantity to reflect the fill.
                 level->reduce_total_quantity(fill_qty);
             }
         }
@@ -121,12 +103,10 @@ void MatchingEngine::match_buy(Order* incoming, MatchResult& result) {
 }
 
 void MatchingEngine::match_sell(Order* incoming, MatchResult& result) {
-    // Sell orders match against the bid side (highest bid first).
     while (!incoming->is_filled()) {
         auto best_bid = book_.best_bid();
         if (!best_bid.has_value()) break;
 
-        // Limit orders only match if sell price <= bid price.
         if (incoming->type != OrderType::Market && incoming->price > *best_bid) {
             break;
         }
