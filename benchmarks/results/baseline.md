@@ -30,7 +30,12 @@ cmake --build build
 
 | Benchmark | Throughput | p50 | p99 | p99.9 |
 |-----------|-----------|-----|-----|-------|
-| *(Run benchmarks and paste your results here)* | | | | |
+| Benchmark | Throughput | p50 | p99 | p99.9 |
+|-----------|-----------|-----|-----|-------|
+| OrderBook add+cancel (uniform)           | 8,469,090 ops/sec  | 83 ns        | 541 ns       | 4.96 μs     |
+| MatchingEngine submit+cancel (uniform)   | 11,307,959 ops/sec | 42 ns        | 375 ns       | 3.71 μs     |
+| MatchingEngine submit+cancel (clustered) | 12,406,027 ops/sec | 42 ns        | 333 ns       | 542 ns       |
+| MatchingEngine add-only (no cancels)     | 10,351,891 ops/sec | 83 ns        | 334 ns       | 583 ns       |
 
 ## Scenarios Explained
 
