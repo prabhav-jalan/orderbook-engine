@@ -26,13 +26,13 @@ A high-performance limit order book and matching engine built from scratch in mo
                     │
                     ▼
           ┌─────────────────┐
-          │ Matching Engine  │   Price-time priority matching
-          │                  │   Limit, Market, IOC, FOK
+          │ Matching Engine │   Price-time priority matching
+          │                 │   Limit, Market, IOC, FOK
           └────────┬────────┘
                    │
           ┌────────▼────────┐
-          │   Order Book     │   Per-instrument bid/ask sides
-          │                  │   std::map + intrusive linked lists
+          │   Order Book    │   Per-instrument bid/ask sides
+          │                 │   std::map + intrusive linked lists
           │  ┌────┐ ┌────┐  │
           │  │Bids│ │Asks│  │
           │  └────┘ └────┘  │
