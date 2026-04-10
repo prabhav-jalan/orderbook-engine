@@ -13,11 +13,7 @@ A high-performance limit order book and matching engine built from scratch in mo
 | Core order book data structures | ✅ Complete |
 | Price-time priority matching    | ✅ Complete |
 | Limit / Market / IOC / FOK orders | ✅ Complete |
-| Benchmark suite                 | 📋 Planned |
-| Memory pool / arena allocator   | 📋 Planned |
-| Lock-free order ingestion       | 📋 Planned |
-| FIX 4.2 protocol parser         | 📋 Planned |
-| Market data snapshots (L2)      | 📋 Planned |
+| Benchmark suite                 | ✅ Complete |
 
 ## Architecture
 

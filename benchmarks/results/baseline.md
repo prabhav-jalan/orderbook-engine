@@ -30,12 +30,10 @@ cmake --build build
 
 | Benchmark | Throughput | p50 | p99 | p99.9 |
 |-----------|-----------|-----|-----|-------|
-| Benchmark | Throughput | p50 | p99 | p99.9 |
-|-----------|-----------|-----|-----|-------|
-| OrderBook add+cancel (uniform)           | 8,469,090 ops/sec  | 83 ns        | 541 ns       | 4.96 μs     |
-| MatchingEngine submit+cancel (uniform)   | 11,307,959 ops/sec | 42 ns        | 375 ns       | 3.71 μs     |
-| MatchingEngine submit+cancel (clustered) | 12,406,027 ops/sec | 42 ns        | 333 ns       | 542 ns       |
-| MatchingEngine add-only (no cancels)     | 10,351,891 ops/sec | 83 ns        | 334 ns       | 583 ns       |
+| OrderBook add+cancel (uniform)           | 10,287,614 ops/sec | 42 ns        | 416 ns       | 4.17 μs     |
+| MatchingEngine submit+cancel (uniform)   | 11,792,263 ops/sec | 42 ns        | 334 ns       | 2.54 μs     |
+| MatchingEngine submit+cancel (clustered) | 11,477,334 ops/sec | 42 ns        | 375 ns       | 3.71 μs     |
+| MatchingEngine add-only (no cancels)     | 10,156,574 ops/sec | 83 ns        | 334 ns       | 542 ns       |
 
 ## Scenarios Explained
 

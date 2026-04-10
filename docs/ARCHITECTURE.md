@@ -3,32 +3,23 @@
 ## System Overview
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                      Gateway Layer                       │
-│              (TCP server, protocol parsing)               │
-│                       [Planned]                          │
-└──────────────────────┬──────────────────────────────────┘
-                       │ Order messages
-                       ▼
-┌─────────────────────────────────────────────────────────┐
-│                    Matching Engine                        │
-│         (price-time priority order matching)              │
-│                                                          │
-│  Supported order types:                                  │
-│    Limit · Market · IOC · FOK                            │
-│                                                          │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐  │
-│  │  Order Book  │  │  Order Book  │  │   Order Book    │  │
-│  │   (AAPL)    │  │   (GOOG)    │  │     (MSFT)      │  │
-│  └─────────────┘  └─────────────┘  └─────────────────┘  │
-└──────────────────────┬──────────────────────────────────┘
-                       │ Trade events, execution reports
-                       ▼
-┌─────────────────────────────────────────────────────────┐
-│                   Market Data Feed                        │
-│           (L2 snapshots, trade stream)                    │
-│                       [Planned]                          │
-└─────────────────────────────────────────────────────────┘
+              Incoming Orders
+                    │
+                    ▼
+          ┌─────────────────┐
+          │ Matching Engine │   Price-time priority matching
+          │                 │   Limit, Market, IOC, FOK
+          └────────┬────────┘
+                   │
+          ┌────────▼────────┐
+          │   Order Book    │   Per-instrument bid/ask sides
+          │                 │   std::map + intrusive linked lists
+          │  ┌────┐ ┌────┐  │
+          │  │Bids│ │Asks│  │
+          │  └────┘ └────┘  │
+          └────────┬────────┘
+                   │
+            Trade Events
 ```
 
 ## Core Components
@@ -73,16 +64,16 @@ Processes incoming orders against an order book using price-time priority.
 3. Fill quantity = `min(incoming.remaining, resting.remaining)`.
 4. Execution price = resting order's price (price improvement for the aggressor).
 5. Generate a `Trade` event for each fill.
-6. Remove fully filled resting orders. Update partially filled orders.
+6. Remove fully filled resting orders. When a filled order is removed, break out of the inner loop and re-fetch the level pointer — the level may have been erased from the `std::map` if it was the last order at that price.
 7. After exhausting matchable levels, handle the remainder by order type:
    - **Limit:** Rest unfilled quantity in the book.
    - **Market / IOC:** Cancel unfilled remainder.
    - **FOK:** Pre-checked before any matching — if full quantity isn't available, the order is rejected without touching the book.
 
 **Key design decisions:**
-- **Single-threaded matching:** Real exchanges (CME, NASDAQ) use single-threaded matching per instrument. Multithreading adds complexity and lock contention without improving latency for the critical path. Parallelism happens at the instrument level (different books on different threads).
-- **Event-driven output:** Matching produces a `MatchResult` containing a vector of `Trade` events plus the order's final disposition (resting, filled, or cancelled). This maps cleanly to downstream consumers.
-- **FOK pre-check via `matchable_ask/bid_quantity()`:** Before executing any trades, FOK orders verify that sufficient matchable volume exists at acceptable prices. This walks the book's price levels and sums available quantity — an O(L) operation where L is the number of price levels, which is acceptable since FOK is uncommon in practice.
+- **Single-threaded matching:** Real exchanges (CME, NASDAQ) use single-threaded matching per instrument. Multithreading adds complexity and lock contention without improving latency for the critical path.
+- **Event-driven output:** Matching produces a `MatchResult` containing a vector of `Trade` events plus the order's final disposition (resting, filled, or cancelled).
+- **FOK pre-check via `matchable_ask/bid_quantity()`:** Before executing any trades, FOK orders verify that sufficient matchable volume exists at acceptable prices. This walks the book's price levels and sums available quantity — an O(L) operation where L is the number of price levels.
 
 ## Benchmarking Infrastructure
 
@@ -96,7 +87,7 @@ Processes incoming orders against an order book using price-time priority.
 - **Uniform distribution:** Prices spread evenly across a configurable range. Useful for measuring average-case behavior.
 - **Clustered distribution:** Normal distribution around the mid-price. More realistic — real order flow concentrates near the spread, causing more frequent matches.
 - Fixed RNG seed (42) for reproducibility. Anyone cloning the repo gets identical benchmark runs.
-- Configurable cancel ratio (default 30%). Realistic markets have 60-80% cancel rates.
+- Configurable cancel ratio (default 30%).
 
 ### Scenarios (`benchmarks/throughput_bench.cpp`)
 - **Per-operation latency:** Each operation individually timed for percentile analysis.
@@ -105,15 +96,4 @@ Processes incoming orders against an order book using price-time priority.
 
 ## Memory Management
 
-- **Current (Phases 1-3):** Standard heap allocation. Orders are caller-managed. Simple and correct.
-- **Planned (Phase 4):** Arena/pool allocator for Order objects. Pre-allocate a large block, hand out fixed-size chunks. This will reduce allocator overhead and improve cache locality — both of which show up clearly in the benchmarks.
-
-## Threading Model (Planned)
-
-```
-[Network Thread] → SPSC Ring Buffer → [Matching Thread] → SPSC Ring Buffer → [Market Data Thread]
-```
-
-- Network thread: Parses incoming messages, validates, writes to ring buffer
-- Matching thread: Reads orders, runs matching logic (hot path, pinned to a core)
-- Market data thread: Consumes events, builds and publishes snapshots
+Orders are caller-managed via raw pointers. The `OrderBook` and `PriceLevel` classes do not own order memory — they hold pointers into storage provided by the caller. This keeps the data structures simple and avoids double-free issues at the cost of requiring the caller to manage lifetimes correctly.
